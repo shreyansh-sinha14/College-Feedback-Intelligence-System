@@ -74,6 +74,8 @@ Visualizations
        ↓
 Insights & Report
 
+---
+
 ## 📖 How the System Works
 
 The College Feedback Intelligence System follows these steps:
@@ -88,6 +90,8 @@ The College Feedback Intelligence System follows these steps:
 8. Key insights are generated from the analyzed feedback.
 9. The analyzed feedback can be downloaded as a CSV report.
 
+---
+
 ## 📊 Output
 
 The system provides:
@@ -100,6 +104,8 @@ The system provides:
 - Analyzed feedback table
 - Downloadable feedback report
 
+---
+
 ## 🧪 Model Evaluation
 
 The sentiment classification model is evaluated using:
@@ -109,6 +115,8 @@ The sentiment classification model is evaluated using:
 - Recall
 - F1-score
 - Confusion Matrix
+
+---
 
 ## 🚀 Future Enhancements
 
