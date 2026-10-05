@@ -1,79 +1,97 @@
-# ============================================================
-# COLLEGE FEEDBACK INTELLIGENCE SYSTEM
-# ============================================================
-
+import streamlit as st
+import pandas as pd
 import re
 import joblib
 import nltk
-import pandas as pd
-import gradio as gr
 import plotly.express as px
+import plotly.graph_objects as go
+from pathlib import Path
 
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
 
 # ============================================================
-# 1. DOWNLOAD NLTK RESOURCES
+# CONFIGURATION
 # ============================================================
 
-nltk.download("punkt", quiet=True)
-nltk.download("punkt_tab", quiet=True)
-nltk.download("stopwords", quiet=True)
-
-
-# ============================================================
-# 2. LOAD TRAINED MODEL AND TF-IDF VECTORIZER
-# ============================================================
-
-from pathlib import Path
-
-BASE_DIR = Path(__file__).resolve().parent
-
-model = joblib.load(BASE_DIR / "sentiment_model.pkl")
-tfidf = joblib.load(BASE_DIR / "tfidf_vectorizer.pkl")
-
-print("Model loaded successfully!")
-print("TF-IDF vectorizer loaded successfully!")
-
-
-# ============================================================
-# 3. TEXT PREPROCESSING
-# ============================================================
-
-stop_words = set(
-    stopwords.words("english")
+st.set_page_config(
+    page_title="College Feedback Intelligence System",
+    page_icon="🎓",
+    layout="wide"
 )
 
 
+# ============================================================
+# FILE PATHS
+# ============================================================
+
+BASE_DIR = Path(__file__).resolve().parent
+
+MODEL_PATH = BASE_DIR / "sentiment_model.pkl"
+TFIDF_PATH = BASE_DIR / "tfidf_vectorizer.pkl"
+
+
+# ============================================================
+# LOAD MODEL
+# ============================================================
+
+@st.cache_resource
+def load_model():
+
+    model = joblib.load(MODEL_PATH)
+    tfidf = joblib.load(TFIDF_PATH)
+
+    return model, tfidf
+
+
+model, tfidf = load_model()
+
+
+# ============================================================
+# NLTK RESOURCES
+# ============================================================
+
+@st.cache_resource
+def download_nltk_resources():
+
+    nltk.download("punkt", quiet=True)
+    nltk.download("punkt_tab", quiet=True)
+    nltk.download("stopwords", quiet=True)
+
+
+download_nltk_resources()
+
+stop_words = set(stopwords.words("english"))
+
+
+# ============================================================
+# TEXT PREPROCESSING
+# ============================================================
+
 def preprocess_text(text):
 
-    # Convert to lowercase
-    text = text.lower()
+    text = str(text).lower()
 
-    # Remove punctuation and numbers
     text = re.sub(
         r"[^a-zA-Z\s]",
         "",
         text
     )
 
-    # Tokenization
     tokens = word_tokenize(text)
 
-    # Remove stopwords
     tokens = [
         word
         for word in tokens
         if word not in stop_words
     ]
 
-    # Join tokens
     return " ".join(tokens)
 
 
 # ============================================================
-# 4. ASPECT KEYWORDS
+# ASPECT DETECTION
 # ============================================================
 
 aspect_keywords = {
@@ -148,13 +166,9 @@ aspect_keywords = {
 }
 
 
-# ============================================================
-# 5. ASPECT DETECTION
-# ============================================================
-
 def detect_aspect(feedback):
 
-    text = feedback.lower()
+    text = str(feedback).lower()
 
     for aspect, keywords in aspect_keywords.items():
 
@@ -167,66 +181,126 @@ def detect_aspect(feedback):
 
 
 # ============================================================
-# 6. FIND FEEDBACK COLUMN
+# FIND FEEDBACK COLUMN
 # ============================================================
 
 def find_feedback_column(df):
 
     possible_columns = [
-
         "feedback",
-        "Feedback",
         "review",
-        "Review",
         "comment",
-        "Comment",
         "comments",
-        "Comments"
+        "response",
+        "student_feedback",
+        "student response"
     ]
 
-    # Check common column names
+    lower_columns = {
+        column.lower(): column
+        for column in df.columns
+    }
+
     for column in possible_columns:
 
-        if column in df.columns:
-            return column
-
-    # If no common name exists,
-    # find the first text column
-    for column in df.columns:
-
-        if df[column].dtype == "object":
-            return column
+        if column in lower_columns:
+            return lower_columns[column]
 
     return None
 
 
 # ============================================================
-# 7. ANALYZE FILE
+# PAGE HEADER
 # ============================================================
 
-def analyze_file(file):
+st.title("🎓 College Feedback Intelligence System")
 
-    # No file uploaded
-    if file is None:
+st.subheader(
+    "NLP-Based Student Feedback Analysis"
+)
 
-        return (
-            "## ⚠️ Please upload a CSV feedback file.",
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None
-        )
+st.write(
+    """
+    Upload a student feedback CSV file to automatically analyze
+    sentiment, identify college-related aspects, visualize the results,
+    and download the analyzed feedback report.
+    """
+)
+
+st.divider()
+
+
+# ============================================================
+# SIDEBAR
+# ============================================================
+
+with st.sidebar:
+
+    st.header("📌 About the Project")
+
+    st.write(
+        """
+        This system uses Natural Language Processing and Machine
+        Learning to analyze student feedback.
+        """
+    )
+
+    st.write("### Technologies")
+
+    st.write(
+        """
+        • Python  
+        • Pandas  
+        • NLTK  
+        • Scikit-learn  
+        • TF-IDF  
+        • Logistic Regression  
+        • Plotly  
+        • Streamlit
+        """
+    )
+
+    st.write("### Analysis")
+
+    st.write(
+        """
+        • Sentiment Analysis  
+        • Aspect Detection  
+        • Data Visualization  
+        • Feedback Insights  
+        • Downloadable Report
+        """
+    )
+
+
+# ============================================================
+# FILE UPLOAD
+# ============================================================
+
+uploaded_file = st.file_uploader(
+    "📂 Upload Student Feedback CSV",
+    type=["csv"]
+)
+
+
+# ============================================================
+# PROCESS FILE
+# ============================================================
+
+if uploaded_file is not None:
 
     try:
 
-        # ----------------------------------------------------
-        # READ CSV
-        # ----------------------------------------------------
+        df = pd.read_csv(uploaded_file)
 
-        df = pd.read_csv(file)
+        st.success(
+            "CSV file uploaded successfully!"
+        )
+
+        st.write(
+            f"**Rows:** {df.shape[0]}  |  "
+            f"**Columns:** {df.shape[1]}"
+        )
 
         # ----------------------------------------------------
         # FIND FEEDBACK COLUMN
@@ -236,17 +310,17 @@ def analyze_file(file):
 
         if feedback_column is None:
 
-            return (
-                "## ❌ Feedback column not found\n\n"
-                f"Available columns: {list(df.columns)}",
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None
+            st.error(
+                "No feedback column was found. "
+                "Please use a column such as "
+                "`feedback`, `review`, `comment`, or `response`."
             )
+
+            st.stop()
+
+        st.info(
+            f"Feedback column detected: **{feedback_column}**"
+        )
 
         # ----------------------------------------------------
         # REMOVE EMPTY FEEDBACK
@@ -256,565 +330,461 @@ def analyze_file(file):
             subset=[feedback_column]
         ).copy()
 
-        df[feedback_column] = (
-            df[feedback_column]
-            .astype(str)
-        )
+        df[feedback_column] = df[
+            feedback_column
+        ].astype(str)
 
         # ----------------------------------------------------
-        # PREPROCESS TEXT
+        # PREPROCESS
         # ----------------------------------------------------
 
-        df["clean_feedback"] = (
-            df[feedback_column]
-            .apply(preprocess_text)
-        )
+        with st.spinner(
+            "Processing feedback..."
+        ):
 
-        # ----------------------------------------------------
-        # TF-IDF
-        # ----------------------------------------------------
+            df["clean_feedback"] = df[
+                feedback_column
+            ].apply(preprocess_text)
 
-        vectors = tfidf.transform(
-            df["clean_feedback"]
-        )
+            # ------------------------------------------------
+            # SENTIMENT PREDICTION
+            # ------------------------------------------------
 
-        # ----------------------------------------------------
-        # SENTIMENT PREDICTION
-        # ----------------------------------------------------
-
-        df["Sentiment"] = model.predict(
-            vectors
-        )
-
-        # ----------------------------------------------------
-        # ASPECT DETECTION
-        # ----------------------------------------------------
-
-        df["Aspect"] = (
-            df[feedback_column]
-            .apply(detect_aspect)
-        )
-
-        # ====================================================
-        # BASIC STATISTICS
-        # ====================================================
-
-        total = len(df)
-
-        positive = (
-            df["Sentiment"] == "Positive"
-        ).sum()
-
-        negative = (
-            df["Sentiment"] == "Negative"
-        ).sum()
-
-        neutral = (
-            df["Sentiment"] == "Neutral"
-        ).sum()
-
-        positive_pct = round(
-            positive / total * 100,
-            1
-        )
-
-        negative_pct = round(
-            negative / total * 100,
-            1
-        )
-
-        neutral_pct = round(
-            neutral / total * 100,
-            1
-        )
-
-        # ====================================================
-        # SENTIMENT DATA
-        # ====================================================
-
-        sentiment_data = (
-            df["Sentiment"]
-            .value_counts()
-            .reindex(
-                [
-                    "Positive",
-                    "Negative",
-                    "Neutral"
-                ],
-                fill_value=0
+            X_new = tfidf.transform(
+                df["clean_feedback"]
             )
+
+            df["sentiment"] = model.predict(
+                X_new
+            )
+
+            # ------------------------------------------------
+            # ASPECT DETECTION
+            # ------------------------------------------------
+
+            df["aspect"] = df[
+                feedback_column
+            ].apply(detect_aspect)
+
+        st.success(
+            "Feedback analysis completed!"
+        )
+
+
+        # ====================================================
+        # SUMMARY METRICS
+        # ====================================================
+
+        st.header("📊 Overall Summary")
+
+        total_feedback = len(df)
+
+        positive_count = (
+            df["sentiment"] == "Positive"
+        ).sum()
+
+        negative_count = (
+            df["sentiment"] == "Negative"
+        ).sum()
+
+        neutral_count = (
+            df["sentiment"] == "Neutral"
+        ).sum()
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+            st.metric(
+                "Total Feedback",
+                total_feedback
+            )
+
+        with col2:
+            st.metric(
+                "Positive",
+                positive_count
+            )
+
+        with col3:
+            st.metric(
+                "Negative",
+                negative_count
+            )
+
+        with col4:
+            st.metric(
+                "Neutral",
+                neutral_count
+            )
+
+
+        # ====================================================
+        # SENTIMENT PIE CHART
+        # ====================================================
+
+        st.header("📈 Overall Sentiment")
+
+        sentiment_counts = (
+            df["sentiment"]
+            .value_counts()
             .reset_index()
         )
 
-        sentiment_data.columns = [
-            "Sentiment",
-            "Count"
+        sentiment_counts.columns = [
+            "sentiment",
+            "count"
         ]
 
-        # ====================================================
-        # CHART 1 - SENTIMENT PIE CHART
-        # ====================================================
-
-        sentiment_fig = px.pie(
-            sentiment_data,
-            names="Sentiment",
-            values="Count",
-            hole=0.45,
-            title="Overall Sentiment Distribution"
+        fig_sentiment = px.pie(
+            sentiment_counts,
+            names="sentiment",
+            values="count",
+            title="Overall Sentiment Distribution",
+            hole=0.4
         )
 
+        st.plotly_chart(
+            fig_sentiment,
+            use_container_width=True
+        )
+
+
         # ====================================================
-        # CHART 2 - SENTIMENT BY ASPECT
+        # ASPECT ANALYSIS
         # ====================================================
+
+        st.header(
+            "🏫 College Aspect Analysis"
+        )
+
+        aspect_counts = (
+            df["aspect"]
+            .value_counts()
+            .reset_index()
+        )
+
+        aspect_counts.columns = [
+            "aspect",
+            "count"
+        ]
+
+        fig_aspects = px.bar(
+            aspect_counts,
+            x="aspect",
+            y="count",
+            title="Feedback by College Aspect",
+            text="count"
+        )
+
+        fig_aspects.update_layout(
+            xaxis_title="College Aspect",
+            yaxis_title="Number of Feedback Responses"
+        )
+
+        st.plotly_chart(
+            fig_aspects,
+            use_container_width=True
+        )
+
+
+        # ====================================================
+        # SENTIMENT BY ASPECT
+        # ====================================================
+
+        st.header(
+            "📊 Sentiment Across College Aspects"
+        )
 
         aspect_sentiment = pd.crosstab(
-            df["Aspect"],
-            df["Sentiment"]
-        )
+            df["aspect"],
+            df["sentiment"]
+        ).reset_index()
 
-        for col in [
+        for sentiment in [
             "Positive",
             "Negative",
             "Neutral"
         ]:
 
-            if col not in aspect_sentiment.columns:
-                aspect_sentiment[col] = 0
+            if sentiment not in aspect_sentiment.columns:
+                aspect_sentiment[sentiment] = 0
 
-        aspect_sentiment = (
-            aspect_sentiment
-            .reset_index()
-        )
-
-        aspect_fig = px.bar(
+        fig_aspect_sentiment = px.bar(
             aspect_sentiment,
-            x="Aspect",
+            x="aspect",
             y=[
                 "Positive",
                 "Negative",
                 "Neutral"
             ],
             barmode="group",
-            title="Sentiment Distribution Across College Aspects"
+            title="Sentiment Distribution by College Aspect"
         )
 
-        aspect_fig.update_layout(
+        fig_aspect_sentiment.update_layout(
             xaxis_title="College Aspect",
-            yaxis_title="Number of Reviews",
-            xaxis_tickangle=-45
+            yaxis_title="Number of Feedback Responses"
         )
 
+        st.plotly_chart(
+            fig_aspect_sentiment,
+            use_container_width=True
+        )
+
+
         # ====================================================
-        # CHART 3 - HEATMAP
+        # HEATMAP
         # ====================================================
+
+        st.header(
+            "🔥 Aspect vs Sentiment Heatmap"
+        )
 
         heatmap_data = pd.crosstab(
-            df["Aspect"],
-            df["Sentiment"]
+            df["aspect"],
+            df["sentiment"]
         )
 
-        heatmap_data = heatmap_data.reindex(
-            columns=[
+        for sentiment in [
+            "Positive",
+            "Negative",
+            "Neutral"
+        ]:
+
+            if sentiment not in heatmap_data.columns:
+                heatmap_data[sentiment] = 0
+
+        heatmap_data = heatmap_data[
+            [
                 "Positive",
                 "Negative",
                 "Neutral"
-            ],
-            fill_value=0
+            ]
+        ]
+
+        fig_heatmap = go.Figure(
+            data=go.Heatmap(
+                z=heatmap_data.values,
+                x=heatmap_data.columns,
+                y=heatmap_data.index,
+                text=heatmap_data.values,
+                texttemplate="%{text}",
+                colorscale="Blues"
+            )
         )
 
-        heatmap_fig = px.imshow(
-            heatmap_data,
-            text_auto=True,
-            aspect="auto",
-            title="Aspect vs Sentiment Heatmap"
-        )
-
-        heatmap_fig.update_layout(
+        fig_heatmap.update_layout(
+            title="Aspect vs Sentiment",
             xaxis_title="Sentiment",
             yaxis_title="College Aspect"
         )
 
+        st.plotly_chart(
+            fig_heatmap,
+            use_container_width=True
+        )
+
+
         # ====================================================
-        # CHART 4 - NEGATIVE FEEDBACK
+        # NEGATIVE FEEDBACK
         # ====================================================
 
-        negative_aspects = (
-            df[
-                df["Sentiment"] == "Negative"
-            ]["Aspect"]
+        st.header(
+            "🔴 Negative Feedback by Aspect"
+        )
+
+        negative_data = df[
+            df["sentiment"] == "Negative"
+        ]
+
+        negative_counts = (
+            negative_data["aspect"]
             .value_counts()
             .reset_index()
         )
 
-        negative_aspects.columns = [
-            "Aspect",
-            "Negative Reviews"
+        negative_counts.columns = [
+            "aspect",
+            "count"
         ]
 
-        if len(negative_aspects) > 0:
+        if len(negative_counts) > 0:
 
-            negative_fig = px.bar(
-                negative_aspects,
-                x="Negative Reviews",
-                y="Aspect",
-                orientation="h",
-                title="🔴 Areas Receiving Negative Feedback"
+            fig_negative = px.bar(
+                negative_counts,
+                x="aspect",
+                y="count",
+                title="Negative Feedback by College Aspect",
+                text="count"
+            )
+
+            st.plotly_chart(
+                fig_negative,
+                use_container_width=True
             )
 
         else:
 
-            negative_fig = px.bar(
-                title="No Negative Feedback Found"
+            st.info(
+                "No negative feedback was detected."
             )
 
+
         # ====================================================
-        # CHART 5 - POSITIVE FEEDBACK
+        # POSITIVE FEEDBACK
         # ====================================================
 
-        positive_aspects = (
-            df[
-                df["Sentiment"] == "Positive"
-            ]["Aspect"]
+        st.header(
+            "🟢 Positive Feedback by Aspect"
+        )
+
+        positive_data = df[
+            df["sentiment"] == "Positive"
+        ]
+
+        positive_counts = (
+            positive_data["aspect"]
             .value_counts()
             .reset_index()
         )
 
-        positive_aspects.columns = [
-            "Aspect",
-            "Positive Reviews"
+        positive_counts.columns = [
+            "aspect",
+            "count"
         ]
 
-        if len(positive_aspects) > 0:
+        if len(positive_counts) > 0:
 
-            positive_fig = px.bar(
-                positive_aspects,
-                x="Positive Reviews",
-                y="Aspect",
-                orientation="h",
-                title="🟢 Areas Receiving Positive Feedback"
+            fig_positive = px.bar(
+                positive_counts,
+                x="aspect",
+                y="count",
+                title="Positive Feedback by College Aspect",
+                text="count"
+            )
+
+            st.plotly_chart(
+                fig_positive,
+                use_container_width=True
             )
 
         else:
 
-            positive_fig = px.bar(
-                title="No Positive Feedback Found"
+            st.info(
+                "No positive feedback was detected."
             )
+
 
         # ====================================================
         # AUTOMATIC INSIGHTS
         # ====================================================
 
+        st.header("💡 Key Insights")
+
         most_discussed = (
-            df["Aspect"]
+            df["aspect"]
             .value_counts()
             .idxmax()
         )
 
-        # Highest negative aspect
+        most_positive = (
+            df[df["sentiment"] == "Positive"]["aspect"]
+            .value_counts()
+        )
 
-        if len(negative_aspects) > 0:
+        most_negative = (
+            df[df["sentiment"] == "Negative"]["aspect"]
+            .value_counts()
+        )
 
-            highest_negative = (
-                negative_aspects.iloc[0]["Aspect"]
+        st.write(
+            f"• **Most discussed aspect:** "
+            f"{most_discussed}"
+        )
+
+        if len(most_positive) > 0:
+
+            st.write(
+                f"• **Most positively received aspect:** "
+                f"{most_positive.idxmax()}"
             )
 
-            highest_negative_count = int(
-                negative_aspects.iloc[0][
-                    "Negative Reviews"
-                ]
+        if len(most_negative) > 0:
+
+            st.write(
+                f"• **Aspect with the most negative feedback:** "
+                f"{most_negative.idxmax()}"
             )
 
-        else:
+        st.write(
+            f"• **Overall positive feedback:** "
+            f"{positive_count} responses"
+        )
 
-            highest_negative = "None"
-            highest_negative_count = 0
+        st.write(
+            f"• **Overall negative feedback:** "
+            f"{negative_count} responses"
+        )
 
-        # Highest positive aspect
+        st.write(
+            f"• **Overall neutral feedback:** "
+            f"{neutral_count} responses"
+        )
 
-        if len(positive_aspects) > 0:
-
-            highest_positive = (
-                positive_aspects.iloc[0]["Aspect"]
-            )
-
-            highest_positive_count = int(
-                positive_aspects.iloc[0][
-                    "Positive Reviews"
-                ]
-            )
-
-        else:
-
-            highest_positive = "None"
-            highest_positive_count = 0
 
         # ====================================================
-        # INSIGHTS
+        # ANALYZED DATA
         # ====================================================
 
-        insights = f"""
-# 🎓 College Feedback Intelligence Report
+        st.header(
+            "📋 Analyzed Feedback"
+        )
 
-## 📊 Overall Results
+        display_columns = [
+            column
+            for column in df.columns
+            if column != "clean_feedback"
+        ]
 
-| Metric | Result |
-|---|---:|
-| **Total Reviews** | **{total}** |
-| 🟢 Positive | **{positive_pct}%** |
-| 🔴 Negative | **{negative_pct}%** |
-| 🟡 Neutral | **{neutral_pct}%** |
+        st.dataframe(
+            df[display_columns],
+            use_container_width=True
+        )
 
----
-
-## 🔎 Key Insights
-
-### 📌 Most Discussed Area
-
-**{most_discussed}**
-
-### 🔴 Area Receiving Most Negative Feedback
-
-**{highest_negative}** — {highest_negative_count} reviews
-
-### 🟢 Area Receiving Most Positive Feedback
-
-**{highest_positive}** — {highest_positive_count} reviews
-
----
-
-### 🤖 NLP Pipeline
-
-**Text Preprocessing → TF-IDF → Logistic Regression → Sentiment Prediction → Aspect Detection**
-"""
 
         # ====================================================
-        # CREATE DOWNLOADABLE REPORT
+        # DOWNLOAD REPORT
         # ====================================================
+
+        st.header(
+            "📥 Download Analysis Report"
+        )
 
         report_df = df.drop(
             columns=["clean_feedback"]
         )
 
-        report_path = "analyzed_feedback_report.csv"
-
-        report_df.to_csv(
-            report_path,
+        csv_data = report_df.to_csv(
             index=False
+        ).encode("utf-8")
+
+        st.download_button(
+            label="⬇️ Download Analyzed Feedback CSV",
+            data=csv_data,
+            file_name="analyzed_feedback_report.csv",
+            mime="text/csv"
         )
 
-        # ====================================================
-        # TABLE
-        # ====================================================
-
-        display_df = report_df[
-            [
-                feedback_column,
-                "Sentiment",
-                "Aspect"
-            ]
-        ]
-
-        # ====================================================
-        # RETURN RESULTS
-        # ====================================================
-
-        return (
-            insights,
-            sentiment_fig,
-            aspect_fig,
-            heatmap_fig,
-            negative_fig,
-            positive_fig,
-            display_df,
-            report_path
-        )
 
     except Exception as e:
 
-        return (
-            f"""
-## ❌ Error while analyzing the file
-
-**Error:** `{str(e)}`
-
-Please check your CSV file and try again.
-""",
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None
+        st.error(
+            f"An error occurred while processing the file: {e}"
         )
 
 
-# ============================================================
-# 8. GRADIO FRONTEND
-# ============================================================
+else:
 
-custom_css = """
-#main-title {
-    text-align: center;
-    font-size: 36px;
-    font-weight: bold;
-}
-
-#subtitle {
-    text-align: center;
-    font-size: 18px;
-    margin-bottom: 20px;
-}
-
-.gradio-container {
-    max-width: 1400px !important;
-}
-"""
-
-
-with gr.Blocks(
-    theme=gr.themes.Soft(),
-    css=custom_css,
-    title="College Feedback Intelligence"
-) as app:
-
-    # --------------------------------------------------------
-    # HEADER
-    # --------------------------------------------------------
-
-    gr.Markdown(
-        """
-        <div id="main-title">
-        🎓 College Feedback Intelligence System
-        </div>
-
-        <div id="subtitle">
-        NLP-Based Student Feedback Analysis Dashboard
-        </div>
-        """
+    st.info(
+        "👆 Upload a CSV file above to start the analysis."
     )
-
-    gr.Markdown(
-        """
-        ### 📁 Upload Student Feedback
-
-        Upload a **CSV file containing student feedback**.
-        The system will automatically analyze sentiment,
-        identify college aspects, generate visual insights,
-        and create a downloadable report.
-        """
-    )
-
-    # --------------------------------------------------------
-    # UPLOAD
-    # --------------------------------------------------------
-
-    with gr.Row():
-
-        file_input = gr.File(
-            label="📁 Upload Feedback CSV",
-            file_types=[".csv"],
-            type="filepath"
-        )
-
-        analyze_button = gr.Button(
-            "🔍 Analyze Feedback",
-            variant="primary"
-        )
-
-    # --------------------------------------------------------
-    # INSIGHTS
-    # --------------------------------------------------------
-
-    gr.Markdown("---")
-
-    insights_output = gr.Markdown()
-
-    # --------------------------------------------------------
-    # CHARTS
-    # --------------------------------------------------------
-
-    gr.Markdown(
-        "## 📊 Visual Analytics"
-    )
-
-    with gr.Row():
-
-        sentiment_output = gr.Plot(
-            label="Overall Sentiment"
-        )
-
-        aspect_output = gr.Plot(
-            label="Sentiment by Aspect"
-        )
-
-    with gr.Row():
-
-        heatmap_output = gr.Plot(
-            label="Aspect vs Sentiment"
-        )
-
-    with gr.Row():
-
-        negative_output = gr.Plot(
-            label="Negative Feedback"
-        )
-
-        positive_output = gr.Plot(
-            label="Positive Feedback"
-        )
-
-    # --------------------------------------------------------
-    # TABLE
-    # --------------------------------------------------------
-
-    gr.Markdown("---")
-
-    gr.Markdown(
-        "## 📋 Detailed Feedback Analysis"
-    )
-
-    table_output = gr.Dataframe(
-        label="Analyzed Student Feedback",
-        interactive=False
-    )
-
-    # --------------------------------------------------------
-    # DOWNLOAD
-    # --------------------------------------------------------
-
-    gr.Markdown("---")
-
-    gr.Markdown(
-        "## ⬇️ Download Report"
-    )
-
-    download_output = gr.File(
-        label="Download Analyzed Feedback Report"
-    )
-
-    # --------------------------------------------------------
-    # BUTTON
-    # --------------------------------------------------------
-
-    analyze_button.click(
-        fn=analyze_file,
-        inputs=file_input,
-        outputs=[
-            insights_output,
-            sentiment_output,
-            aspect_output,
-            heatmap_output,
-            negative_output,
-            positive_output,
-            table_output,
-            download_output
-        ]
-    )
-
-
-# ============================================================
-# 9. LAUNCH APPLICATION
-# ============================================================
-
-app.launch()
