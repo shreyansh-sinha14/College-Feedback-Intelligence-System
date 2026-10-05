@@ -26,11 +26,12 @@ nltk.download("stopwords", quiet=True)
 # 2. LOAD TRAINED MODEL AND TF-IDF VECTORIZER
 # ============================================================
 
-model = joblib.load("sentiment_model.pkl")
+from pathlib import Path
 
-tfidf = joblib.load(
-    "tfidf_vectorizer.pkl"
-)
+BASE_DIR = Path(__file__).resolve().parent
+
+model = joblib.load(BASE_DIR / "sentiment_model.pkl")
+tfidf = joblib.load(BASE_DIR / "tfidf_vectorizer.pkl")
 
 print("Model loaded successfully!")
 print("TF-IDF vectorizer loaded successfully!")
