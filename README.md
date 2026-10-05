@@ -76,7 +76,7 @@ Insights & Report
 
 ---
 
-## 📖 How the System Works
+# 📖 How the System Works
 
 The College Feedback Intelligence System follows these steps:
 
@@ -92,7 +92,7 @@ The College Feedback Intelligence System follows these steps:
 
 ---
 
-## 📊 Output
+# 📊 Output
 
 The system provides:
 
@@ -106,7 +106,7 @@ The system provides:
 
 ---
 
-## 🧪 Model Evaluation
+# 🧪 Model Evaluation
 
 The sentiment classification model is evaluated using:
 
@@ -118,7 +118,7 @@ The sentiment classification model is evaluated using:
 
 ---
 
-## 🚀 Future Enhancements
+# 🚀 Future Enhancements
 
 - Use Transformer-based models for improved sentiment classification
 - Improve aspect detection using semantic similarity
