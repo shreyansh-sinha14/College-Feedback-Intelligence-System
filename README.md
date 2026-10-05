@@ -1,37 +1,60 @@
 # 🎓 College Feedback Intelligence System
 
-An NLP-based system that analyzes student feedback using Machine Learning and provides sentiment and aspect-based insights.
+## Student Information
 
-## 📌 Project Overview
+| Field | Details |
+|---|---|
+| **Name** | Shreyansh Sinha |
+| **Registration Number** | 23FE10CDS00513 |
+| **Branch** | B.Tech CSE - Data Science |
+| **Batch** | Batch G |
+| **GitHub Username** | shreyansh-sinha14 |
+| **Training Program** | MUJ Data Science Training Program |
 
-Colleges receive a large amount of student feedback through surveys and forms. Manually analyzing this feedback can be time-consuming.
+---
 
-The **College Feedback Intelligence System** automatically analyzes feedback and provides:
+# 📌 Project Title
 
-- 🟢 Positive, Negative and Neutral sentiment classification
-- 🔎 College aspect detection
-- 📊 Interactive visualizations
-- 📈 Sentiment distribution analysis
-- 🔥 Aspect vs Sentiment analysis
-- 💡 Automatic insights
-- 📥 Downloadable analyzed feedback report
+## College Feedback Intelligence System
 
-## 🛠️ Technologies Used
+### NLP-Based Student Feedback Analysis
 
-- Python
-- Pandas
-- NumPy
-- NLTK
-- Scikit-learn
-- TF-IDF
-- Logistic Regression
-- Gradio
-- Plotly
+---
 
-## 🧠 NLP Pipeline
+# 📖 Project Overview
+
+The College Feedback Intelligence System is an NLP and Machine Learning based application that automatically analyzes student feedback.
+
+The system accepts a CSV file containing student feedback and performs:
+
+- Sentiment classification
+- College aspect detection
+- Data analysis
+- Interactive visualizations
+- Automatic insights
+- Downloadable feedback report
+
+---
+
+# 🎯 Objectives
+
+1. Collect and prepare student feedback data.
+2. Perform text preprocessing.
+3. Analyze the sentiment of feedback.
+4. Identify major college-related aspects.
+5. Convert text into numerical features using TF-IDF.
+6. Train a Machine Learning model for sentiment classification.
+7. Evaluate the model.
+8. Generate useful visual insights from student feedback.
+
+---
+
+# 🧠 NLP Pipeline
 
 ```text
 Student Feedback
+       ↓
+CSV Upload
        ↓
 Text Preprocessing
        ↓
@@ -45,4 +68,8 @@ Sentiment Prediction
        ↓
 Aspect Detection
        ↓
-Visual Analytics & Report
+Data Analysis
+       ↓
+Visualizations
+       ↓
+Insights & Report
