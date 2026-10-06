@@ -132,3 +132,10 @@ The sentiment classification model is evaluated using:
 - Add department and semester-wise analysis
 - Add historical feedback trend analysis
 - Develop an administrative dashboard
+
+## ⚙️ Installation Guide
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/shreyansh-sinha14/MUJ-DS-23FE10CDS00513.git
