@@ -79,7 +79,7 @@ Data Analysis
 Visualizations
        ↓
 Insights & Report
-
+```
 ---
 
 # 📖 How the System Works
@@ -111,6 +111,26 @@ The system provides:
 - Downloadable feedback report
 
 ---
+
+## 🧪 Model Performance
+
+The sentiment classification model was evaluated using a test set of 120 feedback responses.
+
+| Metric | Score |
+|---|---:|
+| Accuracy | 96.67% |
+| Macro F1-score | 0.97 |
+| Weighted F1-score | 0.97 |
+
+### Classification Performance
+
+| Sentiment | Precision | Recall | F1-score |
+|---|---:|---:|---:|
+| Negative | 1.00 | 0.89 | 0.94 |
+| Neutral | 1.00 | 1.00 | 1.00 |
+| Positive | 0.94 | 1.00 | 0.97 |
+
+The model achieved 96.67% accuracy on the test set, showing strong performance in classifying student feedback into Positive, Negative, and Neutral categories.
 
 # 🧪 Model Evaluation
 
