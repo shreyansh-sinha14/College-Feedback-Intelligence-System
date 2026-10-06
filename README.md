@@ -1,3 +1,9 @@
+## 🌐 Live Demo
+
+The College Feedback Intelligence System is deployed using Streamlit Community Cloud.
+
+🔗 **Live Application:** https://college-feedback-intelligence.streamlit.app
+
 # 🎓 College Feedback Intelligence System
 
 ## Student Information
