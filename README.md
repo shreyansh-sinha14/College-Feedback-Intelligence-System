@@ -159,3 +159,45 @@ The sentiment classification model is evaluated using:
 
 ```bash
 git clone https://github.com/shreyansh-sinha14/MUJ-DS-23FE10CDS00513.git
+```
+### 2. Navigate to the Project
+cd MUJ-DS-23FE10CDS00513/code
+
+### 3. Install Required Dependencies
+pip install -r requirements.txt
+
+### 4. Run the Streamlit Application
+streamlit run app.py
+
+### 5. Open the Application
+After running the command, Streamlit will provide a local URL.
+Open the URL in a web browser and upload a student feedback CSV file.
+📄 Input File Format
+The application accepts CSV files containing a student feedback column.
+The feedback column can be named:
+- feedback
+- review
+- comment
+- comments
+- response
+- student_feedback
+- student response
+Example:
+feedback
+The faculty explains concepts very well
+The hostel rooms need improvement
+The WiFi connection is excellent
+The library has a good collection of books
+
+
+📊 Results
+The system generates:
+- Overall sentiment distribution
+- College aspect analysis
+- Sentiment distribution by aspect
+- Aspect vs sentiment heatmap
+- Positive feedback analysis
+- Negative feedback analysis
+- Key insights
+- Analyzed feedback table
+- Downloadable CSV report
