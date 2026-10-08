@@ -58,27 +58,29 @@ The system accepts a CSV file containing student feedback and performs:
 # 🧠 NLP Pipeline
 
 ```text
-Student Feedback
-       ↓
-CSV Upload
-       ↓
-Text Preprocessing
-       ↓
-Tokenization & Stopword Removal
-       ↓
-TF-IDF Vectorization
-       ↓
-Logistic Regression
-       ↓
-Sentiment Prediction
-       ↓
+Student Feedback CSV
+        ↓
+Data Loading
+        ↓
+Text Cleaning
+        ↓
+Batch Feedback
+        ↓
+Gemini Flash API
+        ↓
+Prompt + Feedback
+        ↓
+Sentiment Analysis
+        ↓
 Aspect Detection
-       ↓
-Data Analysis
-       ↓
-Visualizations
-       ↓
-Insights & Report
+        ↓
+Structured JSON Output
+        ↓
+Data Aggregation
+        ↓
+Visualizations & Insights
+        ↓
+Downloadable Report
 ```
 ---
 
